@@ -1,7 +1,7 @@
 # Image/Tensor Gallery Site Template
 
 This is a basic template for a https://gohugo.io/ site with image galleries, download cards, and
-an optional download limit worker.
+an optional download limit worker. You can see an example at https://thalis.dev/.
 
 The image galleries include image metadata such as the prompt and generation parameters for
 AI-generated images. The download cards include training metadata such as the learning rate
