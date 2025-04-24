@@ -5,6 +5,25 @@
 > set up using this guide. If you are not familiar with those things, please wait until
 > I can improve the documentation.
 
+## Hosting
+
+This guide is focused on creating a website that is hosted on Cloudflare R2 storage and
+using the Cloudflare D1 sqlite-compatible database.
+
+Since Hugo compiles a static website with HTML pages, you can host the site on any HTTP
+server or hosting service. All you need to do is copy the files up to your public HTML
+folder.
+
+The download limit worker will only run on Cloudflare workers for now.
+
+## Dependencies
+
+- Hugo: https://gohugo.io/
+- NodeJS: https://nodejs.org/en
+- npm: included with NodeJS
+- Cloudflare wrangler: https://developers.cloudflare.com/workers/wrangler/install-and-update/
+
+
 ## Site Setup
 
 1. Sign up for Cloudflare
