@@ -18,12 +18,17 @@ The download limit worker will only run on Cloudflare workers for now.
 
 ## Dependencies
 
+### Site Dependencies
+
 - Hugo: https://gohugo.io/
+
+### Worker Dependencies
+
 - NodeJS: https://nodejs.org/en
 - npm: included with NodeJS
 - Cloudflare wrangler: https://developers.cloudflare.com/workers/wrangler/install-and-update/
 
-## Site Setup
+## Basic Site Setup
 
 1. Sign up for Cloudflare
 2. Issue a Privacy credit card number
@@ -34,17 +39,26 @@ The download limit worker will only run on Cloudflare workers for now.
 5. Create Redirect Rules
     1. Redirect path to index
     2. Redirect HTTP to HTTPS
-6. Rate Limiting Rules
+6. Run Hugo build
+7. Upload site files from `public` folder to the site bucket
+8. Upload tensors to the downloads bucket
+
+## Download Limit Setup
+
+I recommend setting up both the rate limiting rules and the download limit worker
+to prevent abuse of the download links.
+
+### Rate Limiting
+
+1. Rate Limiting Rules
     1. Security -> Bots -> Enable All
     2. Security -> WAF -> Rate Limiting
         1. if the path ends with `.safetensors`
         2. 5-10 requests in 10 seconds
         3. block
         4. for 10 seconds
-7. Run Hugo build and deploy to site bucket
-8. Upload tensors to downloads bucket
 
-## Download Limit Setup
+### Worker Setup
 
 1. Create D1 database
     1. Apply schema
