@@ -43,6 +43,16 @@ The download limit worker will only run on Cloudflare workers for now.
 7. Upload site files from `public` folder to the site bucket
 8. Upload tensors to the downloads bucket
 
+## Adding Content
+
+1. Create a subfolder in the `content/models` or `content/posts` folder for your new post
+2. Copy the `template.md` file from `content/models` or `content/posts` into your new folder
+3. Rename the file to `index.md`
+4. Add images into the same post folder
+5. Edit the `index.md` file to add your post content
+6. When the post is ready, set the `draft` field to `false` and run `hugo build` again
+7. Upload the site files to the site bucket again
+
 ## Download Limit Setup
 
 I recommend setting up both the rate limiting rules and the download limit worker
