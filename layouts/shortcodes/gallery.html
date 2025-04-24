@@ -1,0 +1,162 @@
+{{/* Shortcode parameters:
+    prefix: file name prefix (e.g., "photo-")
+    maxWidth: thumbnail max width (default 300)
+    maxHeight: thumbnail max height (default 300)
+    parent: use parent resources
+*/}}
+
+{{ $prefix := .Get "prefix" | default "photo-" }}
+{{ $maxWidth := .Get "maxWidth" | default 240 }}
+{{ $maxHeight := .Get "maxHeight" | default 240 }}
+{{ $parent := .Get "parent" | default false }}
+
+{{/* If parent is true, use the parent page's resources */}}
+{{ $images := .Page.Resources.Match (printf "%s*.png" $prefix) }}
+{{ if $parent }}
+  {{ range $parentPage := .Page.Parent.Pages }}
+    {{ $parentImages := $parentPage.Resources.Match (printf "%s*.png" $prefix) }}
+    {{ range $parentImages }}
+      {{ $images = $images | append . }}
+    {{ end }}
+  {{ end }}
+{{ end }}
+
+{{/* Sort images by name */}}
+{{ $images = sort $images "Name" "asc" }}
+
+{{ if .Site.Params.debug }}
+Showing {{ len $images }} images: [ {{ range $images }}{{ .Name }}, {{ end }} ] (parent: {{ $parent }}, prefix: {{ $prefix }})
+{{ end }}
+
+{{/* Generate random 6-letter suffix from alphabet */}}
+{{ $letters := slice "a" "b" "c" "d" "e" "f" "g" "h" "i" "j" "k" "l" "m" "n" "o" "p" "q" "r" "s" "t" "u" "v" "w" "x" "y" "z" }}
+{{ $suffix := delimit (shuffle $letters | first 6) "" }}
+{{ $galleryClass := printf "image-gallery-%s" $suffix }}
+
+<div class="{{ $galleryClass }}">
+  {{ range $images }}
+    {{ $thumb := .Fit (printf "%dx%d" $maxWidth $maxHeight) }}
+    {{ $comment := .Title | default (printf "%s (%s)" .Name (dateFormat "2006-01-02 15:04:05" .Exif.Date)) }}
+
+    {{ $image := . }}
+    {{ $jsonPath := (replace .RelPermalink ".png" ".json") }}
+    {{ with readFile $jsonPath }}
+      {{ $meta := . | unmarshal }}
+
+      {{/* Final exif data dict */}}
+      {{ $exifData := dict
+        "Base Size" (printf "%.0fx%.0f" $meta.base_width $meta.base_height)
+        "Final Size" (printf "%dx%d" $image.Width $image.Height)
+        "CFG" $meta.cfg
+        "Seed" $meta.seed
+        "Steps" $meta.steps
+        "Prompt" $meta.prompt
+      | jsonify }}
+    <a
+      href="{{ $image.RelPermalink }}"
+      data-pswp-width="{{ $image.Width }}"
+      data-pswp-height="{{ $image.Height }}"
+      data-params='{{ $exifData }}'>
+      <img class="gallery-image" src="{{ $thumb.RelPermalink }}" alt="{{ $comment }}" />
+    </a>
+    {{ else }}
+      {{ $exifData := dict
+        "Exif" nil
+        "Params" nil
+        "Prompt" nil
+        "Seed" nil
+        "CFG" nil
+        "Steps" nil
+        "Width" nil
+        "Height" nil
+        "Hashes" nil
+      | jsonify }}
+    <a
+      href="{{ .RelPermalink }}"
+      data-pswp-width="{{ .Width }}"
+      data-pswp-height="{{ .Height }}"
+      data-params='{{ $exifData }}'>
+      <img class="gallery-image" src="{{ $thumb.RelPermalink }}" alt="{{ $comment }}" />
+    </a>
+    {{ end }}
+  {{ end }}
+</div>
+
+<script type="text/javascript">
+  const exifKeyOrder = [
+    'Base Size',
+    'Final Size',
+    'CFG',
+    'Seed',
+    'Steps',
+    'Prompt',
+  ];
+  const lightbox = new PhotoSwipeLightbox({
+    gallery: '.{{ $galleryClass }}',
+    children: 'a',
+    pswpModule: PhotoSwipe
+  });
+  lightbox.on('uiRegister', function() {
+    lightbox.pswp.ui.registerElement({
+      name: 'download-button',
+      order: 8,
+      isButton: true,
+      tagName: 'a',
+
+      // SVG with outline
+      html: {
+        isCustomSVG: true,
+        inner: '<path d="M20.5 14.3 17.1 18V10h-2.2v7.9l-3.4-3.6L10 16l6 6.1 6-6.1ZM23 23H9v2h14Z" id="pswp__icn-download"/>',
+        outlineID: 'pswp__icn-download'
+      },
+
+      onInit: (el, pswp) => {
+        el.setAttribute('download', '');
+        el.setAttribute('target', '_blank');
+        el.setAttribute('rel', 'noopener');
+
+        pswp.on('change', () => {
+          console.log('change');
+          el.href = pswp.currSlide.data.src;
+        });
+      }
+    });
+  });
+  lightbox.on('uiRegister', function () {
+    lightbox.pswp.ui.registerElement({
+      name: 'exif-metadata',
+      order: 10,
+      isButton: false,
+      appendTo: 'root',
+      className: 'pswp__exif-metadata',
+      html: '',
+      onInit: (el, pswp) => {
+        function formatExif(exifData) {
+          try {
+            const exif = JSON.parse(exifData);
+            return Object.entries(exif)
+              .sort(([keyA], [keyB]) => {
+                const indexA = exifKeyOrder.indexOf(keyA);
+                const indexB = exifKeyOrder.indexOf(keyB);
+                return indexA - indexB;
+              })
+              .map(([key, val]) => `<strong>${key}</strong>: ${val}`)
+              .join('<br>');
+          } catch {
+            return 'Invalid EXIF data';
+          }
+        }
+
+        pswp.on('change', () => {
+          const currEl = pswp.currSlide?.data?.element;
+          const exifData = currEl?.dataset?.params;
+
+          el.innerHTML = exifData
+            ? formatExif(exifData)
+            : '<em>No EXIF data</em>';
+        });
+      }
+    });
+  });
+  lightbox.init();
+</script>

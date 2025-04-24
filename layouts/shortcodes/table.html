@@ -1,0 +1,32 @@
+{{ $table := .Inner | transform.Unmarshal }}
+
+<table>
+  {{ with $table.caption }} <caption>{{ . | markdownify }}</caption> {{ end }}
+  <thead>
+    <tr>
+      {{ range $table.headers }} <th>{{ . | humanize }}</th> {{ end }}
+    </tr>
+  </thead>
+  <tbody>
+    {{ range $table.rows }}
+      {{ $row := . }}
+      <tr>
+        {{ range $table.headers }}
+          {{ $adult := (in $table.adult_columns .) }}
+          {{ $adultClass := cond $adult "mode-adult" "" }}
+
+          {{ with (index $row .) }}
+            {{ if (findRE "^\\d+$" .) }}
+              <td class="numeric {{ $adultClass }}">{{ . | lang.FormatNumber 0 }}</td>
+            {{ else }}
+              <td class="{{ $adultClass }}">{{ . }}</td>
+            {{ end }}
+            {{ if $adult }}
+              <td class="mode-angel">???</td>
+            {{ end }}
+          {{ end }}
+        {{ end }}
+      </tr>
+    {{ end }}
+  </tbody>
+</table>

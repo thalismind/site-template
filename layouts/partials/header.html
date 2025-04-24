@@ -1,0 +1,34 @@
+<div class="navbar" role="navigation">
+    <nav class="menu" aria-label="Main Navigation">
+        <a href="{{ .Site.Home.Permalink }}" class="logo">
+            {{ partial "svgs/home.svg" (dict "height" 25 "width" 25) . }}
+        </a>
+
+        {{ $modelsPage := .GetPage "models" }}
+        <a href="{{ $modelsPage.Permalink }}" class="logo menu-item">
+            {{ partial "svgs/model.svg" (dict "height" 25 "width" 25) . }}
+            {{ len $modelsPage.Pages }} Models
+        </a>
+
+        {{ $postsPage := .GetPage "posts" }}
+        <a href="{{ $postsPage.Permalink }}" class="logo menu-item">
+            {{ partial "svgs/post.svg" (dict "height" 25 "width" 25) . }}
+            {{ len $postsPage.Pages }} Posts
+        </a>
+
+        <input type="checkbox" id="menu-trigger" class="menu-trigger" />
+        <label for="menu-trigger">
+            <span class="menu-icon">
+                {{ partial "svgs/menu.svg" (dict "height" 25 "width" 25) . }}
+            </span>
+        </label>
+
+        <div class="trigger">
+            <a id="mode" href="#">
+                {{ partial "svgs/sun.svg" (dict "height" 21 "width" 21 "class" "mode-sunny" "title" "LIGHT") . }}
+                {{ partial "svgs/sun.svg" (dict "height" 21 "width" 21 "class" "mode-moon" "title" "DARK") . }}
+            </a>
+        </div>
+    </nav>
+</div>
+<button id="scroll-to-top">&#8593;</button>

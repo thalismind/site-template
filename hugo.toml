@@ -1,0 +1,28 @@
+baseURL = 'https://thalis.dev/'
+languageCode = 'en-us'
+title = 'Thalis AI'
+theme = 'hugo-blog-awesome'
+
+[imaging.exif]
+includeFields = '.*'
+
+[markup.tableOfContents]
+endLevel = 4
+startLevel = 2
+
+[params]
+custom_css = ['/css/extra.css']
+mainSections = ["home"]
+homeSections = ["models", "posts"]
+
+[params.author]
+name = "Thalis AI"
+intro = "Thalis AI"
+avatar = "images/logo.png"
+description = """
+LoRA training and GenAI experiments
+"""
+
+[params.download]
+domain = "https://download.thalis.dev"
+default_token = "TODO"

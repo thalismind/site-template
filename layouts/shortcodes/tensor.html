@@ -1,0 +1,188 @@
+{{ $filename := .Get "file" | default (.Get 0) }}
+{{ $licenseStr := .Get "license" | default "release-noncommercial" }}
+
+{{ $siteData := .Site.Data }}
+
+{{ $jsonFile := printf "%s.json" $filename }}
+{{ $tensorFile := printf "%s.safetensors" $filename }}
+
+{{ $json := .Page.Resources.Get $jsonFile | transform.Unmarshal }}
+{{ $tensor := .Page.Resources.Get $tensorFile }}
+
+{{ $baseLicense := "" }}
+{{ if eq $json.base_model "flux1" }}
+{{/* $licenseStr = printf "%s,%s" $licenseStr "flux1" */}}
+{{ $baseLicense = "flux1" }}
+{{ end }}
+{{/* TODO: Pony, Illu */}}
+
+{{ $licenses := split $licenseStr "," }}
+
+{{ $contentLengthBytes := len $tensor.Content }}
+{{ $contentLengthMB := div $contentLengthBytes 1048576.0 }}
+
+<div class="tensor-meta" style="margin-bottom: 1.5rem;">
+  <p class="tensor-download">
+    <a href="{{ .Site.Params.download.domain }}{{ .Page.Path }}/{{ $tensorFile }}?token={{ .Site.Params.download.default_token }}" download>Download {{ $tensorFile }}</a>
+    ({{ printf "%.2f MB" $contentLengthMB }})
+  </p>
+
+  <p class="tensor-hash">
+    SHA256: <code class="copy">{{ $json.hash }}</code>
+  </p>
+
+  <table style="font-size: 0.9em; border-collapse: collapse; width: 100%;">
+    <tbody>
+      {{/* Upper section: Model */}}
+      <tr>
+        <td colspan="4" style="padding: 0.5em;"><strong>Model</strong></td>
+      </tr>
+      <tr>
+        <td class="tensor-meta-label"><strong>Base Model</strong></td>
+        {{ with $json.base_model }}
+        {{ $baseModelData := where $siteData.base_models "name" . }}
+        {{ if eq (len $baseModelData) 0 }}
+        <td>{{ . | title }}</td>
+        {{ else }}
+        {{ $baseModelData := index $baseModelData 0 }}
+        <td>
+          <a href="{{ $baseModelData.url }}" target="_blank">{{ . | title }}</a>
+        </td>
+        {{ end }}
+        {{ end }}
+        <td class="tensor-meta-label"><strong>Training Precision</strong></td>
+        {{ with $json.base_precision }}
+        <td>{{ . }}</td>
+        {{ end }}
+      </tr>
+      <tr>
+        <td class="tensor-meta-label"><strong>License</strong></td>
+        {{ range $i, $license := $licenses }}
+          {{ $licenseData := where $siteData.licenses "name" $license }}
+          {{ if eq (len $licenseData) 0 }}
+            <td>{{ $license | title }}</td>
+          {{ else }}
+            {{ $licenseData := index $licenseData 0 }}
+            <td><a href="{{ $licenseData.url }}" target="_blank">{{ $licenseData.display }}</a></td>
+          {{ end }}
+        {{ end }}
+        {{ if $baseLicense }}
+          {{ $baseLicenseData := where $siteData.licenses "name" $baseLicense }}
+          <td class="tensor-meta-label"><strong>Base License</strong></td>
+          {{ if eq (len $baseLicenseData) 0 }}
+            <td>{{ $baseLicense | title }}</td>
+          {{ else }}
+            {{ $baseLicenseData := index $baseLicenseData 0 }}
+            <td><a href="{{ $baseLicenseData.url }}" target="_blank">{{ $baseLicenseData.display }}</a></td>
+          {{ end }}
+        {{ end }}
+      </tr>
+      {{/* Upper section: Network */}}
+      <tr>
+        <td colspan="4" style="padding: 0.5em;"><strong>Network Type</strong></td>
+      </tr>
+      {{ with $json.network }}
+      <tr>
+        <td class="tensor-meta-label"><strong>Network</strong></td>
+        {{ $networkData := where $siteData.network_type "name" . }}
+        {{ if eq (len $networkData) 0 }}
+        <td>{{ . | title }}</td>
+        {{ else }}
+        {{ $networkData := index $networkData 0 }}
+        <td>
+          <a href="{{ $networkData.url }}" target="_blank">{{ . | title }}</a>
+        </td>
+        {{ end }}
+        <td class="tensor-meta-label"><strong>Network Precision</strong></td>
+        {{ with $json.precision }}
+        <td>{{ . }}</td>
+        {{ end }}
+      </tr>
+      {{ end }}
+      {{ with $json.algo }}
+      <tr>
+        <td class="tensor-meta-label"><strong>Algorithm</strong></td>
+        <td>{{ . | title }}</td>
+      </tr>
+      {{ end }}
+
+      {{/* Two-column training parameters section */}}
+      <tr>
+        <td colspan="4" style="padding: 0.5em;"><strong>Training Parameters</strong></td>
+      </tr>
+
+      <tr>
+        {{ with $json.optimizer_name }}
+        <td class="tensor-meta-label"><strong>Optimizer</strong></td>
+        {{ $optimizerData := where $siteData.optimizer_type "name" . }}
+        {{ if eq (len $optimizerData) 0 }}
+        <td>{{ . | title }}</td>
+        {{ else }}
+        {{ $optimizerData := index $optimizerData 0 }}
+        <td>
+          <a href="{{ $optimizerData.url }}" target="_blank">{{ . | title }}</a>
+        </td>
+        {{ end }}
+        {{ end }}
+        {{ with $json.steps }}
+        <td class="tensor-meta-label"><strong>Steps</strong></td>
+        <td>{{ $json.steps }}</td>
+        {{ end }}
+      </tr>
+
+      <tr>
+        {{ if eq $json.optimizer_name "Prodigy" }}
+        <td class="tensor-meta-label"><strong>D Coef</strong></td>
+        <td>{{ $json.d_coef }}</td>
+        {{ else if $json.learning_rate }}
+        <td class="tensor-meta-label"><strong>Learning Rate</strong></td>
+        <td>{{- partial "scientific_notation" $json.learning_rate }}</td>
+        {{ end }}
+        {{ if $json.training_images }}
+        <td class="tensor-meta-label"><strong>Training Images</strong></td>
+        <td>{{ $json.training_images }}</td>
+        {{ end }}
+        {{ if $json.merge }}
+        <td class="tensor-meta-label"><strong>Merged</strong></td>
+        <td>{{ $json.merge }}</td>
+        {{ end }}
+      </tr>
+      <tr>
+        <td class="tensor-meta-label"><strong>Dimension</strong></td>
+        <td>{{ $json.dim }}</td>
+        <td class="tensor-meta-label"><strong>Alpha</strong></td>
+        <td>{{ $json.alpha }}</td>
+      </tr>
+      {{/* Only show conv fields if the network is lycoris */}}
+      {{ if eq $json.network "lycoris" }}
+      <tr>
+        <td class="tensor-meta-label"><strong>Conv Dimension</strong></td>
+        <td>{{ $json.conv_dim }}</td>
+        <td class="tensor-meta-label"><strong>Conv Alpha</strong></td>
+        <td>{{ $json.conv_alpha }}</td>
+      </tr>
+      {{ end }}
+      {{ if not $json.merge }}
+      <tr>
+        <td class="tensor-meta-label"><strong>Min SNR Gamma</strong></td>
+        {{ if lt $json.min_snr_gamma 0 }}
+        <td>None</td>
+        {{ else }}
+        <td>{{ default "None" $json.min_snr_gamma }}</td>
+        {{ end }}
+        <td class="tensor-meta-label"><strong>Weight Decay</strong></td>
+        {{ if $json.weight_decay }}
+        <td>{{ $json.weight_decay }}</td>
+        {{ else }}
+        <td>None</td>
+        {{ end }}
+      </tr>
+      {{ end }}
+    </tbody>
+  </table>
+  </td>
+
+  </tr>
+  </tbody>
+  </table>
+</div>

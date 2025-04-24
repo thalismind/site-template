@@ -1,0 +1,18 @@
+- name: flux1
+  display: Flux1.Dev License
+  url: https://github.com/black-forest-labs/flux/blob/main/model_licenses/LICENSE-FLUX1-dev
+- name: release-noncommercial
+  display: Non-Commercial License
+  url: TODO
+- name: release-commercial
+  display: Commercial License
+  url: TODO
+- name: release-limited
+  display: Limited License
+  url: TODO
+- name: release-research
+  display: Research License
+  url: TODO
+- name: prerelease-noncommercial
+  display: Pre-Release Non-Commercial License
+  url: TODO

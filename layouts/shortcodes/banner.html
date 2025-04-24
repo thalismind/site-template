@@ -1,0 +1,8 @@
+<p class="banner">
+  {{ $image_path := .Get "src" }}
+  {{ $image := .Page.Resources.Get $image_path }}
+
+  <a href="{{ $image }}" class="banner_link">
+    <img src="{ { ($image.Resize 720x).RelPermalink } }" alt="{{ .Get "alt" }}" class="banner_image">
+  </a>
+</p>

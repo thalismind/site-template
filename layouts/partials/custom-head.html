@@ -1,0 +1,48 @@
+<link rel="stylesheet" href="/css/extra.css" />
+
+{{ $scroll_script := resources.Get "js/scroll.js" }}
+{{ if hugo.IsProduction }}
+{{ $scroll_script := $scroll_script | minify | fingerprint }}
+<script src="{{ $scroll_script.RelPermalink }}" integrity="{{ $scroll_script.Data.Integrity }}"></script>
+{{ else }}
+<script src="{{ $scroll_script.RelPermalink }}"></script>
+{{ end }}
+
+{{ $adult_script := resources.Get "js/adult.js" }}
+{{ if hugo.IsProduction }}
+{{ $adult_script := $adult_script | minify | fingerprint }}
+<script src="{{ $adult_script.RelPermalink }}" integrity="{{ $adult_script.Data.Integrity }}"></script>
+{{ else }}
+<script src="{{ $adult_script.RelPermalink }}"></script>
+{{ end }}
+
+{{ if or (.HasShortcode "copy") (.HasShortcode "tensor") }}
+{{ $copy_script := resources.Get "js/copy.js" }}
+{{ if hugo.IsProduction }}
+{{ $copy_script := $copy_script | minify | fingerprint }}
+<script src="{{ $copy_script.RelPermalink }}" integrity="{{ $copy_script.Data.Integrity }}"></script>
+{{ else }}
+<script src="{{ $copy_script.RelPermalink }}"></script>
+{{ end }}
+{{ end }}
+
+{{ if .HasShortcode "gallery" }}
+<link rel="stylesheet" href="/css/photoswipe.css">
+
+{{ $photoswipe_script := resources.Get "js/photoswipe.umd.min.js" }}
+{{ if hugo.IsProduction }}
+{{ $photoswipe_script := $photoswipe_script | minify | fingerprint }}
+<script src="{{ $photoswipe_script.RelPermalink }}" integrity="{{ $photoswipe_script.Data.Integrity }}"></script>
+{{ else }}
+<script src="{{ $photoswipe_script.RelPermalink }}"></script>
+{{ end }}
+
+{{ $photoswipe_lightbox_script := resources.Get "js/photoswipe-lightbox.umd.min.js" }}
+{{ if hugo.IsProduction }}
+{{ $photoswipe_lightbox_script := $photoswipe_lightbox_script | minify | fingerprint }}
+<script src="{{ $photoswipe_lightbox_script.RelPermalink }}" integrity="{{ $photoswipe_lightbox_script.Data.Integrity }}"></script>
+{{ else }}
+<script src="{{ $photoswipe_lightbox_script.RelPermalink }}"></script>
+{{ end }}
+
+{{ end }}

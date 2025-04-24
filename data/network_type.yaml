@@ -1,0 +1,6 @@
+- name: lora
+  display: LoRA"
+  url: "https://huggingface.co/docs/peft/main/en/conceptual_guides/lora"
+- name: lycoris
+  display: LyCORIS
+  url: "https://github.com/KohakuBlueleaf/LyCORIS/blob/main/docs/Algo-List.md"

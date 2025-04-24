@@ -1,0 +1,83 @@
+{{- $thumbnailSize := .Params.grid_gallery_size | default "200x200" -}}
+{{- $pages := (where .Pages ".Params.unlisted" "!=" "true") -}}
+{{- $galleryPage := where $pages "Params.gallery" "section" }}
+{{- $adultPages := where $pages "Params.adult" true }}
+
+{{ $pages = $pages.ByDate.Reverse }}
+
+{{ if .Site.Params.debug }}
+<div>
+Showing {{ len $pages }} of {{ len $pages }} {{ .Page.Type }} (gallery pages: {{ len $galleryPage }}).
+</div>
+{{ end }}
+
+{{ if len $adultPages }}
+  {{ partial "adult_switch.html" . }}
+{{ end }}
+
+{{ if len $galleryPage }}
+  <div class="gallery-header">
+    <h2>Galleries</h2>
+  </div>
+{{ end }}
+
+<div class="gallery-children gallery-grid">
+  {{- range $galleryPage }}
+    {{/* Get the cover image */}}
+    {{- $cover := .Resources.Get "cover.png" -}}
+    {{- if $cover }}
+      <div class="gallery-item">
+        <a href="{{ .Permalink }}">
+          <img src="{{ ($cover.Fill $thumbnailSize).RelPermalink }}" alt="{{ .Title }}" class="gallery-thumbnail">
+          <p>{{ .Title }}</p>
+        </a>
+      </div>
+    {{- else }}
+      <div class="gallery-item">
+        <a href="{{ .Permalink }}">
+          <p>No Cover Image</p>
+          <p>{{ .Title }}</p>
+        </a>
+      </div>
+    {{- end }}
+  {{- end }}
+</div>
+
+{{- if len $galleryPage }}
+  <div class="gallery-header">
+    <h2>{{ .Page.Type | title }}</h2>
+  </div>
+{{ end }}
+
+<div class="gallery-grid">
+  {{- range $pages }}
+    {{/* Skip the gallery page */}}
+    {{- if in $galleryPage . }}
+      {{- continue }}
+    {{- end }}
+
+    {{ if in $adultPages . }}
+      <div class="mode-adult">
+    {{ end }}
+    {{/* Get the cover image */}}
+    {{- $cover := .Resources.Get "cover.png" -}}
+    {{- if $cover }}
+      <div class="gallery-item">
+        <a href="{{ .Permalink }}">
+          <img src="{{ ($cover.Fill $thumbnailSize).RelPermalink }}" alt="{{ .Title }}" class="gallery-thumbnail">
+          <p>{{ .Title }}</p>
+        </a>
+      </div>
+    {{- else }}
+      <div class="gallery-item">
+        <a href="{{ .Permalink }}">
+          <p>No Cover Image</p>
+          <p>{{ .Title }}</p>
+        </a>
+      </div>
+    {{- end }}
+    {{ if in $adultPages . }}
+      </div>
+    {{ end }}
+  {{- end }}
+</div>

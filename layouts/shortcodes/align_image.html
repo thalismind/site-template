@@ -1,0 +1,14 @@
+{{ $align := .Get "align" | default "left" }}
+{{ $floatStyle := cond (eq $align "right") "right" "left" }}
+
+<div style="overflow: auto; margin-bottom: 1em;">
+  <figure style="float: {{ $floatStyle }}; margin: {{ if eq $floatStyle "left" }}0 1em 1em 0{{ else }}0 0 1em 1em{{ end }}; max-width: 50%;">
+    <img src="{{ .Get "src" }}" alt="{{ .Get "alt" }}" style="width: 100%;" />
+    {{ with .Get "caption" }}
+      <figcaption style="font-size: 0.9em; color: #666;">{{ . }}</figcaption>
+    {{ end }}
+  </figure>
+  <div>
+    {{ .Inner | markdownify }}
+  </div>
+</div>

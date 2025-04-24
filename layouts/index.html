@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+{{- $defaultColor := .Site.Params.defaultColor | default "auto" -}}
+{{- $thumbnailSize := .Params.grid_gallery_size | default "200x200" -}}
+{{- $pageCount := 7 }}
+
+{{/* allow website developer to enforce default dark mode */}}
+{{- if eq $defaultColor "dark" -}}
+<html lang="{{ .Site.LanguageCode }}" class="dark">
+{{- else if eq $defaultColor "light" -}}
+<html lang="{{ .Site.LanguageCode }}" class="light">
+{{- else -}}
+<html lang="{{ .Site.LanguageCode }}">
+{{- end -}}
+
+{{- partial "head.html" . -}}
+
+{{ $avatar_img := .Site.Params.author.avatar }}
+{{ $image := resources.Get $avatar_img }}
+{{ $home_pages := .Site.Params.homePages }}
+
+<body data-theme="{{ $defaultColor }}" class="notransition">
+    {{- partial "scriptsBodyStart.html" . -}}
+    {{- partial "header.html" . -}}
+    <div class="wrapper">
+        {{ partial "bio" . }}
+        <main aria-label="Content" class="page-content">
+            {{ partial "adult_switch.html" . }}
+
+            {{ range $section := .Site.Params.homeSections }}
+                {{ $pages := where $.Site.RegularPages "Section" $section }}
+                {{ $sorted := sort $pages "Date" "desc" }}
+                {{ $more := gt (len $sorted) $pageCount }}
+                {{ $moreCount := sub (len $sorted) $pageCount }}
+
+                {{ $sectionPage := where $.Site.Sections "Section" $section }}
+
+                <h2>Latest {{ humanize $section }} (showing {{ math.Min $pageCount (len $sorted) }} of {{ len $pages }})</h2>
+                <div class="gallery-grid">
+                    {{ range first $pageCount $sorted }}
+                        {{/* Get the cover image */}}
+                        {{- $cover := .Resources.Get "cover.png" -}}
+                        {{ if .Params.adult }}
+                        <div class="mode-adult">
+                        {{ end }}
+                        {{- if $cover }}
+                        <div class="gallery-item">
+                            <a href="{{ .Permalink }}">
+                            <img src="{{ ($cover.Fill $thumbnailSize).RelPermalink }}" alt="{{ .Title }}" class="gallery-thumbnail">
+                            <p>{{ .Title }}</p>
+                            </a>
+                        </div>
+                        {{- else }}
+                        <div class="gallery-item">
+                            <a href="{{ .Permalink }}">
+                            <p>No Cover Image</p>
+                            <p>{{ .Title }}</p>
+                            </a>
+                        </div>
+                        {{- end }}
+                        {{ if .Params.adult }}
+                        </div>
+                        {{ end }}
+                    {{ end }}
+                    {{ if $more }}
+                    <div class="gallery-item">
+                        <a href="{{ (index $sectionPage 0).Permalink }}">
+                            <img src="{{ ((resources.Get "images/cover-more.png").Fill $thumbnailSize).RelPermalink }}" alt="More {{ $section | title }}" class="gallery-thumbnail">
+                            <p>{{ $moreCount }} More {{ $section | title }}</p>
+                        </a>
+                    </div>
+                    {{ end }}
+                </div>
+            {{ end }}
+        </main>
+    </div>
+    {{- partial "footer.html" . -}}
+    {{- partial "scriptsBodyEnd.html" . -}}
+</body>
+
+</html>
